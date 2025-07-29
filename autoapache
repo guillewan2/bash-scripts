@@ -1,0 +1,62 @@
+#!/bin/bash
+# filepath: /home/guille/Documents/bash/autoapache
+
+# Guillermo Torres
+# Fecha: mar 29 jul 2025
+# Hora: 18:39
+# Descripción: 'Crea un servidor apache en el directorio donde se ha ejecutado el comando automaticamente'
+# Distribución: Ubuntu 24.04.2 LTS
+
+# Variables
+APACHE_IMAGE="httpd:latest"
+CONTAINER_NAME="autoapache"
+HOST_PORT=8080
+CONTAINER_PORT=80
+
+# Check if $1 is stop
+if [ "$1" == "stop" ]; then
+    echo "Stopping and removing the Apache container..."
+    if [ "$(docker ps -aq -f name=$CONTAINER_NAME)" ]; then
+        docker stop $CONTAINER_NAME 2>/dev/null
+        docker rm $CONTAINER_NAME
+        echo "Apache container stopped and removed."
+        exit 0
+    else
+        echo "There is no container such as '$CONTAINER_NAME'."
+        exit 1
+    fi
+fi
+
+# Check if docker is installed
+if ! command -v docker &> /dev/null; then
+    echo "Docker is not installed. Please install Docker first."
+    exit 1
+fi
+
+# Check if the user is root or in the docker group
+if [ "$(id -u)" -ne 0 ] && ! groups "$USER" | grep -qw "docker"; then
+    echo "This script must be run as root or as a user in the 'docker' group."
+    echo "Use sudo or add your user to the 'docker' group."
+    exit 1
+fi
+
+# Check if any container with the same name exists
+if [ "$(docker ps -aq -f name=$CONTAINER_NAME)" ]; then
+    echo "Container '$CONTAINER_NAME' exists. Stopping and removing it..."
+    docker stop $CONTAINER_NAME 2>/dev/null
+    docker rm $CONTAINER_NAME 
+fi
+
+chmod -R a+rX "$(pwd)"
+
+
+docker run -dit --name $CONTAINER_NAME -p $HOST_PORT:$CONTAINER_PORT -v "$(pwd)":/usr/local/apache2/htdocs/ $APACHE_IMAGE &> /dev/null
+
+if [ $? -eq 0 ]; then
+    echo "Apache server is running at http://localhost:$HOST_PORT"
+    echo ""
+    echo "To stop it, run the command: $0 stop"
+else
+    echo "Failed to start the Apache server."
+    exit 1
+fi
