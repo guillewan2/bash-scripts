@@ -13,7 +13,7 @@ CONTAINER_NAME="autoapache"
 HOST_PORT=8080
 CONTAINER_PORT=80
 
-# Check if $1 is stop
+# Check if $1 says "stop"
 if [ "$1" == "stop" ]; then
     echo "Stopping and removing the Apache container..."
     if [ "$(docker ps -aq -f name=$CONTAINER_NAME)" ]; then
@@ -47,11 +47,13 @@ if [ "$(docker ps -aq -f name=$CONTAINER_NAME)" ]; then
     docker rm $CONTAINER_NAME 
 fi
 
+# Give folder permissions
 chmod -R a+rX "$(pwd)"
 
-
+# Run the docker container
 docker run -dit --name $CONTAINER_NAME -p $HOST_PORT:$CONTAINER_PORT -v "$(pwd)":/usr/local/apache2/htdocs/ $APACHE_IMAGE &> /dev/null
 
+# Check Errors
 if [ $? -eq 0 ]; then
     echo "Apache server is running at http://localhost:$HOST_PORT"
     echo ""
